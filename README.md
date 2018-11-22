@@ -1,2 +1,2 @@
-# a
-adventofcode2018
+# adventofcode2018
+http://adventofcode.com/2018
