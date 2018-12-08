@@ -2,7 +2,7 @@ import sys
 from collections import Counter
 
 
-def part1(coords):
+def solve(coords):
     x_coords = [x for x, y in coords]
     y_coords = [y for x, y in coords]
 
@@ -11,6 +11,7 @@ def part1(coords):
     min_y = min(y_coords) - 1
     max_y = max(y_coords) + 1
 
+    # Part1
     grid = {}
     for x in range(min_x, max_x + 1):
         for y in range(min_y, max_y + 1):
@@ -21,9 +22,8 @@ def part1(coords):
                 if cdist < dist:
                     closest = (cx, cy)
                     dist = cdist
-                elif cdist == closest:
+                elif cdist == dist:
                     closest = None
-
             grid[x, y] = closest
 
     infinite = set()
@@ -35,12 +35,15 @@ def part1(coords):
         infinite.add(grid[min_x, y])
         infinite.add(grid[max_x, y])
 
-    # grid = {coord: closest for coord, closest in grid.items() if closest not in infinite}
+    grid = {coord: closest for coord, closest in grid.items() if closest not in infinite}
     counter = Counter(grid.values())
-    for q in infinite:
-        counter.pop(q, infinite)
-        print(counter.most_common(1))
-    return counter.most_common(1)[0][1]
+    part1 = counter.most_common(1)[0][1]
+
+    # Part2
+    part2 = sum(sum(abs(x-cx)+abs(y-cy) for cx,cy in coords) < 10_000 for x in range(min_x, max_x+1) for y in range(min_y, max_y+1))
+
+    return part1, part2
+
 
 
 if __name__ == "__main__":
@@ -53,5 +56,6 @@ if __name__ == "__main__":
             ),
         )
     )
-    print(coords)
-    print(part1(coords))
+    part1, part2 = solve(coords)
+    print(part1)
+    print(part2)
