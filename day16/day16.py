@@ -51,7 +51,6 @@ def bani(registers, op):
     r[op[3]] = r[op[1]] & op[2]
     return tuple(r)
 
-
 def borr(registers, op):
     r = list(registers)
     r[op[3]] = r[op[1]] | r[op[2]]
@@ -61,7 +60,6 @@ def bori(registers, op):
     r = list(registers)
     r[op[3]] = r[op[1]] | op[2]
     return tuple(r)
-
 
 def setr(registers, op):
     r = list(registers)
@@ -103,11 +101,10 @@ def eqrr(registers, op):
     r[op[3]] = 1 if r[op[1]] == r[op[2]] else 0
     return tuple(r)
 
+ACTIONS = [addr, addi, mulr, muli, mulr, banr, bani, borr, bori, setr, seti, gtir, gtri, gttr, eqir, eqri, eqrr]
 
 def matches(before, op, after):
-    actions = [addr, addi, mulr, muli, mulr, banr, bani, borr, bori, setr, seti, gtir, gtri, gttr, eqir, eqri, eqrr]
-
-    return len(list(filter(lambda a: a(before, op) == after, actions)))
+    return len(list(filter(lambda a: a(before, op) == after, ACTIONS)))
 
 
 def part1(entries):
@@ -118,8 +115,35 @@ def part1(entries):
 
     return count
 
+def part2(entries1, entries2):
+    op_ids = {i: set(ACTIONS) for i in range(16)}
+    for before, op, after in entries1:
+        op_id = op[0]
+        bad_ops = set(filter(lambda a: a(before, op) != after, ACTIONS))
+        op_ids[op_id] = op_ids[op_id] - bad_ops
+
+    # deduce which item is what by iteratively removing
+    # those functions that have already been deduced
+    while any(len(v) > 1 for k, v in op_ids.items()):
+        finished = set()
+        for k, v in op_ids.items():
+            if len(v) == 1:
+                finished = finished | v
+        for k, v in op_ids.items():
+            if len(v) > 1:
+                op_ids[k] = op_ids[k] - finished
+
+
+    actions = {i: s.pop() for i, s in op_ids.items()}
+    registers = [0, 0, 0, 0]
+    for op in entries2:
+        action = actions[op[0]]
+        registers = action(registers, op)
+
+    return registers[0]
 
 
 if __name__ == "__main__":
     entries1, entries2 = parse()
     print(part1(entries1))
+    print(part2(entries1, entries2))
